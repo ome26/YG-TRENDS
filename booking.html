@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Book Stitching</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<h2 style="text-align:center;">Book Stitching</h2>
+
+<div class="form-container">
+
+<form id="bookingForm">
+
+<label>Name</label>
+<input type="text" id="name" placeholder="Enter your name" required>
+
+<label>Phone</label>
+<input type="tel" id="mobile" placeholder="Enter phone number" required>
+
+<label>Address</label>
+<input type="text" id="address" placeholder="Enter your address" required>
+
+<label>Cloth Type</label>
+
+<select id="clothType">
+<option>Shirt</option>
+<option>Pant</option>
+<option>Suit</option>
+<option>Nehru Jacket</option>
+<option>Kurta</option>
+</select>
+
+<label>
+<input type="radio" name="visitType" value="Home" checked>
+Home Visit
+</label>
+
+<label>
+<input type="radio" name="visitType" value="Shop">
+Shop Visit
+</label>
+
+<br>
+
+
+<p id="shopMessage" style="display:none;color:green;font-weight:bold;">
+Visit our shop at Chitale road, Pragati Complex, Ahilyanagar between 10 AM – 8 PM
+</p>
+
+<div id="dateSection">
+
+<label>Measurement Date</label>
+<input type="date" id="measurementDate">
+
+<label>Measurement Time</label>
+<select id="time" >
+<option value="">Select Time</option>
+<option>10:00 AM</option>
+<option>12:00 PM</option>
+<option>2:00 PM</option>
+<option>4:00 PM</option>
+<option>6:00 PM</option>
+</select>
+
+</div>
+
+
+<button type="submit">Submit Booking</button>
+
+<p id="successMessage" style="display:none; color:green; font-weight:bold; margin-top:10px;">
+✔ Booking Submitted Successfully,  
+ We will contact you shortly.
+</p>
+
+<script>
+
+if(!localStorage.getItem("userId")){
+  alert("Please login first");
+  window.location.href = "login.html";
+}
+
+const dateInput = document.getElementById("measurementDate");
+
+let today = new Date();
+let maxDate = new Date();
+
+maxDate.setDate(today.getDate() + 7);
+
+let todayString = today.toISOString().split("T")[0];
+let maxString = maxDate.toISOString().split("T")[0];
+
+dateInput.min = todayString;
+dateInput.max = maxString;
+
+
+/* BOOKING SUCCESS MESSAGE */
+
+const form = document.getElementById("bookingForm");
+const message = document.getElementById("successMessage");
+
+form.addEventListener("submit", async function(event){
+
+event.preventDefault();
+
+let name = document.getElementById("name").value;
+let mobile = document.getElementById("mobile").value;
+let address = document.getElementById("address").value;
+let clothType = document.getElementById("clothType").value;
+let date = document.getElementById("measurementDate").value;
+let time = document.getElementById("time").value;
+
+let visitType = document.querySelector('input[name="visitType"]:checked').value;
+
+// 🚫 Restrict home visit location
+if(visitType === "Home"){
+  if(!address.includes("414001") && !address.toLowerCase().includes("ahmednagar")){
+    alert("Home visit available only in Ahmednagar (414001)");
+    return;
+  }
+}
+if(visitType === "Home"){
+  if(!date || !time){
+    alert("Please select date and time for home visit");
+    return;
+  }
+}
+
+try{
+
+console.log("USER ID:", localStorage.getItem("userId"));
+
+await fetch("http://localhost:5000/stitch",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body: JSON.stringify({
+userId: localStorage.getItem("userId"),   // ⭐ ADD THIS
+
+name:name,
+mobile:mobile,
+address:address,
+clothType:clothType,
+measurementDate:date,
+time:time,
+visitType:visitType
+})
+
+});
+
+message.style.display = "block";
+
+form.reset();
+
+}catch(err){
+
+alert("Server error. Please try again.");
+
+}
+
+});
+window.onload = function(){
+
+let savedAddress = localStorage.getItem("userAddress");
+
+if(savedAddress){
+  document.getElementById("address").value = savedAddress;
+}
+
+let params = new URLSearchParams(window.location.search);
+let cloth = params.get("cloth");
+
+if(cloth){
+  let clothDropdown = document.getElementById("clothType");
+  if(clothDropdown){
+    clothDropdown.value = cloth;
+  }
+}
+
+}
+
+document.querySelectorAll('input[name="visitType"]').forEach(radio => {
+  radio.addEventListener("change", () => {
+
+    let selected = document.querySelector('input[name="visitType"]:checked').value;
+
+    if(selected === "Home"){
+      document.getElementById("dateSection").style.display = "block";
+      document.getElementById("shopMessage").style.display = "none";
+    }else{
+      document.getElementById("dateSection").style.display = "none";
+      document.getElementById("shopMessage").style.display = "block";
+    }
+
+  });
+});
+</script>
+
+
+
+</form>
+
+</div>
+
+</body>
+
+</html>

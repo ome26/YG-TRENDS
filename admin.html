@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Panel</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div style="background:#222;color:white;padding:15px;display:flex;justify-content:space-between;align-items:center">
+
+<div style="font-size:20px;font-weight:bold">
+YG Trends Admin
+</div>
+
+<div style="display:flex;gap:20px">
+
+<span onclick="showSection('dashboard')" style="cursor:pointer">Dashboard</span>
+
+<span onclick="showSection('ordersSection')" style="cursor:pointer">Orders</span>
+
+<span onclick="showSection('stitchSection')" style="cursor:pointer">Stitch Orders</span>
+
+<span onclick="logout()" style="cursor:pointer;color:red">Logout</span>
+
+</div>
+
+</div>
+
+<div id="dashboard">
+<h2 style="
+text-align:center;
+font-size:30px;
+margin-bottom:5px;
+">
+YG Trends Business Dashboard
+</h2>
+
+<p style="
+text-align:center;
+color:#555;
+margin-bottom:20px;
+">
+Order Analytics • Stitching Analytics • Revenue Analytics
+</p>
+
+<button
+onclick="downloadSalesReport()"
+style="
+display:block;
+margin:15px auto;
+padding:10px 20px;
+background:#2c3e50;
+color:white;
+border:none;
+border-radius:6px;
+cursor:pointer;
+font-weight:bold;
+">
+📄 Download Sales Report
+</button>
+
+<div style="
+display:flex;
+flex-wrap:wrap;
+gap:15px;
+justify-content:center;
+margin:20px;
+">
+
+<div style="background:#4CAF50;color:white;padding:15px;border-radius:8px">
+Total Orders: <span id="totalOrders">0</span>
+</div>
+
+
+<div style="background:#3498db;color:white;padding:15px;border-radius:8px">
+Processing: <span id="processingOrders">0</span>
+</div>
+
+<div style="background:#f39c12;color:white;padding:15px;border-radius:8px">
+shipped: <span id="shippedOrders">0</span>
+</div>
+
+<div style="background:#2ecc71;color:white;padding:15px;border-radius:8px">
+Out For Delivery: <span id="outOrders">0</span>
+</div>
+
+<div style="background:#b9289c;color:white;padding:15px;border-radius:8px">
+Delivered: <span id="deliveredOrders">0</span>
+</div>
+
+<div style="background:#9b59b6;color:white;padding:15px;border-radius:8px">
+👤 Users: <span id="totalUsers">0</span>
+</div>
+
+<div style="background:#16a085;color:white;padding:15px;border-radius:8px">
+✂️ Stitch Requests: <span id="totalStitch">0</span>
+</div>
+
+<div style="
+background:#e67e22;
+color:white;
+padding:15px;
+border-radius:8px;
+min-width:180px;
+text-align:center;
+">
+
+<div style="font-size:14px;">
+💰 Total Revenue
+</div>
+
+<div style="
+font-size:22px;
+font-weight:bold;
+margin-top:5px;
+">
+Rs. <span id="totalRevenue">0</span>
+</div>
+
+</div>
+
+
+<div style="
+background:#34495e;
+color:white;
+padding:15px;
+border-radius:8px;
+min-width:180px;
+text-align:center;
+">
+
+<div style="font-size:14px;">
+🔄 Replacement Requests
+</div>
+
+<div style="
+font-size:22px;
+font-weight:bold;
+margin-top:5px;
+">
+<span id="replacementCount">0</span>
+</div>
+
+</div>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div style="width:60%;margin:20px auto;">
+<canvas id="orderChart"></canvas>
+</div>
+
+<div style="width:40%;margin:30px auto;background:white;padding:20px;border-radius:10px;">
+<canvas id="pieChart"></canvas>
+</div>
+</div>
+
+<div id="ordersSection" style="text-align:center; display:none; ">
+<div id="orders"></div>
+</div>
+
+<div id="stitchSection" style="
+display:none;
+flex-wrap:wrap;
+justify-content:center;
+gap:20px;
+"></div>
+
+
+<script>
+
+
+
+// DASHBOARD STATISTICS
+fetch("http://localhost:5000/dashboard-stats")
+.then(res => res.json())
+.then(data => {
+
+document.getElementById("totalUsers").innerText =
+data.users;
+
+document.getElementById("totalStitch").innerText =
+data.stitch;
+
+document.getElementById("totalRevenue").innerText =
+data.revenue.toLocaleString();
+
+document.getElementById("replacementCount").innerText =
+data.replacement;
+
+});
+
+//existing
+fetch("http://localhost:5000/orders")
+.then(res => res.json())
+.then(data => {
+
+let total = data.length;
+
+// rest of your existing code...
+
+let processing = data.filter(o => o.status === "Processing").length;
+let shipped = data.filter(o => o.status === "Shipped").length;
+let outForDelivery = data.filter(o => o.status === "Out For Delivery").length;
+let delivered = data.filter(o => o.status === "Delivered").length;
+
+// ✅ Correct UI update
+document.getElementById("totalOrders").innerText = total;
+document.getElementById("processingOrders").innerText = processing;
+document.getElementById("shippedOrders").innerText = shipped;
+document.getElementById("outOrders").innerText = outForDelivery;
+document.getElementById("deliveredOrders").innerText = delivered;
+
+new Chart(document.getElementById("orderChart"), {
+type: 'bar',
+data: {
+labels: ["Processing", "Shipped", "Out For Delivery", "Delivered"],
+datasets: [{
+label: "Orders",
+data: [processing, shipped, outForDelivery, delivered],
+
+backgroundColor: [
+"#3498db",   // blue
+"#f39c12",   // orange
+"#2ecc71",    // green
+"#b9289c"
+],
+
+borderColor: [
+"#2980b9",
+"#e67e22",
+"#27ae60",
+"#8e1b73"
+],
+
+borderWidth: 2
+}]
+},
+options: {
+scales: {
+y: {
+beginAtZero: true,
+ticks: {
+color: "#000"
+}
+},
+x: {
+ticks: {
+color: "#000"
+}
+}
+},
+plugins: {
+legend: {
+labels: {
+color: "#000"
+}
+}
+}
+}
+});
+
+new Chart(document.getElementById("pieChart"), {
+type: 'pie',
+data: {
+labels: ["Processing", "Shipped", "Out For Delivery", "Delivered"],
+datasets: [{
+data: [processing, shipped, outForDelivery, delivered],
+
+backgroundColor: [
+"#3498db",   // blue
+"#f39c12",   // orange
+"#2ecc71" ,   // green
+"#b9289c"
+],
+
+borderColor: [
+"#2980b9",
+"#e67e22",
+"#27ae60",
+"#8e1b73"
+],
+
+borderWidth: 2
+}]
+},
+options: {
+plugins: {
+legend: {
+position: 'bottom',
+labels: {
+color: "#000",
+font: {
+size: 14
+}
+}
+}
+}
+}
+});
+let container = document.getElementById("orders");
+
+let replaceHTML = `
+<h2 style="width:100%;text-align:center;background:#2f4f4f;color:white;padding:10px;border-radius:8px;">
+Replacement Requests
+</h2>`;
+
+let pendingHTML = `
+<h2 style="width:100%;text-align:center;background:#e74c3c;color:white;padding:10px;border-radius:8px;">
+Pending Orders
+</h2>`;
+
+let processingHTML = `
+<h2 style="width:100%;text-align:center;background:#3498db;color:white;padding:10px;border-radius:8px;">
+Processing Orders
+</h2>`;
+
+let shippedHTML = `
+<h2 style="width:100%;text-align:center;background:#f39c12;color:white;padding:10px;border-radius:8px;">
+Shipped Orders
+</h2>`;
+
+let ofdHTML = `
+<h2 style="width:100%;text-align:center;background:#2ecc71;color:white;padding:10px;border-radius:8px;">
+Out For Delivery
+</h2>`;
+
+let deliveredHTML = `
+<h2 style="width:100%;text-align:center;background:#9b59b6;color:white;padding:10px;border-radius:8px;">
+Delivered Orders
+</h2>`;
+
+data.forEach(item => {
+
+
+let div = document.createElement("div");
+
+div.innerHTML = `
+<div style="background:white;padding:15px;margin:15px;border-radius:8px;width:250px;display:inline-block">
+
+<img src="${item.image ? item.image : 'http://127.0.0.1:5500/images/tshirt1.jpg'}" 
+style="width:100%;height:150px;object-fit:cover;border-radius:6px">
+
+<h3>${item.name}</h3>
+<p>${item.product}</p>
+<p>${item.price}</p>
+<p>Size: ${item.size}</p>
+<p>${item.address}</p>
+${item.status !== "Delivered" && item.status !== "Cancelled" ? `
+
+
+<p>Stock: ${item.stock ?? 10}</p>
+
+<input type="number" id="stock-${item._id}" placeholder="Update Stock">
+
+<button onclick="updateStock('${item._id}')">Update Stock</button>
+` : `
+<p style="color:gray;">Final Stock: ${item.stock ?? 0}</p>
+`}
+
+<p><b>Status: ${item.status || "Pending"}</b></p>
+
+${item.replaceStatus === "Requested" ? `
+<p style="color:red;"><b>Replacement Requested</b></p>
+<p><b>Reason:</b> ${item.replaceReason || "Not Provided"}</p>
+
+<button onclick="approveReplace('${item._id}')">Approve</button>
+` : ""}
+
+${item.replaceStatus === "Approved" ? `
+<p style="color:green;"><b>Replacement Approved</b></p>
+` : ""}
+
+
+${item.rating ? `<p>Rating: ${item.rating} ⭐</p>` : ""}
+${item.feedback ? `<p>Feedback: ${item.feedback}</p>` : ""}
+
+${item.status !== "Delivered" && item.status !== "Cancelled" ? `
+<select id="status-${item._id}">
+  <option value="Processing">Processing</option>
+  <option value="Shipped">Shipped</option>
+  <option value="Out For Delivery">Out For Delivery</option>
+  <option value="Delivered">Delivered</option>
+  <option value="Cancelled">Cancelled</option>
+</select>
+
+<br><br>
+
+<button onclick="updateStatus('${item._id}')">Update Status</button>
+` : `<p style="color:green;"><b>Final Status: ${item.status}</b></p>`}
+
+</div>
+`;
+
+let card = div.innerHTML;
+if(item.replaceStatus === "Requested"){
+  replaceHTML += card;
+}
+else if(item.status === "Pending"){
+  pendingHTML += card;
+}
+else if(item.status === "Processing"){
+  processingHTML += card;
+}
+else if(item.status === "Shipped"){
+  shippedHTML += card;
+}
+else if(item.status === "Out For Delivery"){
+  ofdHTML += card;
+}
+else if(item.status === "Delivered"){
+  deliveredHTML += card;
+}
+
+});
+container.innerHTML =
+replaceHTML +
+pendingHTML +
+processingHTML +
+shippedHTML +
+ofdHTML +
+deliveredHTML;
+});
+
+
+// ================= STITCHING ORDERS =================
+
+fetch("http://localhost:5000/all-stitch")
+.then(res => res.json())
+.then(data => {
+
+let container = document.getElementById("stitchSection");
+let assignedHTML = `
+<h2 style="
+width:100%;
+text-align:center;
+background:#2ecc71;
+color:white;
+padding:10px;
+border-radius:8px;
+margin-top:20px;
+">
+Assigned Orders
+</h2>
+`;
+
+let pendingHTML = `
+<h2 style="
+width:100%;
+text-align:center;
+background:#e74c3c;
+color:white;
+padding:10px;
+border-radius:8px;
+margin-top:20px;
+">
+Not Assigned Orders
+</h2>
+`;
+
+let deliveredHTML = `
+<h2 style="
+width:100%;
+text-align:center;
+background:#9b59b6;
+color:white;
+padding:10px;
+border-radius:8px;
+margin-top:20px;
+">
+Delivered Orders
+</h2>
+`;
+
+data.forEach(item => {
+
+let div = document.createElement("div");
+
+// ✅ Dynamic measurement fields with saved values
+let measurementFields = "";
+
+if(item.clothType === "Shirt"){
+  measurementFields = `
+    <input id="chest-${item._id}" value="${item.chest || ""}" placeholder="Chest"><br>
+    <input id="shoulder-${item._id}" value="${item.shoulder || ""}" placeholder="Shoulder"><br>
+    <input id="sleeve-${item._id}" value="${item.sleeve || ""}" placeholder="Sleeve Length"><br>
+  `;
+}
+else if(item.clothType === "Pant"){
+  measurementFields = `
+    <input id="waist-${item._id}" value="${item.waist || ""}" placeholder="Waist"><br>
+    <input id="thigh-${item._id}" value="${item.thigh || ""}" placeholder="Thigh"><br>
+    <input id="length-${item._id}" value="${item.length || ""}" placeholder="Length"><br>
+  `;
+}
+else if(item.clothType === "Kurta"){
+  measurementFields = `
+    <input id="chest-${item._id}" value="${item.chest || ""}" placeholder="Chest"><br>
+    <input id="shoulder-${item._id}" value="${item.shoulder || ""}" placeholder="Shoulder"><br>
+    <input id="length-${item._id}" value="${item.length || ""}" placeholder="Length"><br>
+  `;
+}
+else if(item.clothType === "Suit"){
+  measurementFields = `
+  <input id="chest-${item._id}" value="${item.chest || ""}" placeholder="Chest"><br>
+    <input id="thigh-${item._id}" value="${item.thigh || ""}" placeholder="Thigh"><br>
+    <input id="waist-${item._id}" value="${item.waist || ""}" placeholder="Waist"><br>
+    <input id="length-${item._id}" value="${item.length || ""}" placeholder="Length"><br>
+    <input id="shoulder-${item._id}" value="${item.shoulder || ""}" placeholder="Shoulder"><br>
+  `;
+}
+else if(item.clothType === "Nehru Jacket"){
+  measurementFields = `
+    <input id="chest-${item._id}" value="${item.chest || ""}" placeholder="Chest"><br>
+    <input id="shoulder-${item._id}" value="${item.shoulder || ""}" placeholder="Shoulder"><br>
+    <input id="length-${item._id}" value="${item.length || ""}" placeholder="Length"><br>
+  `;
+}
+
+
+let card = `
+<div style="background:#f1f1f1;padding:15px;margin:10px;border-radius:8px;width:260px;
+min-height:280px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+
+<h3>Stitching Order</h3>
+
+<p>${item.name}</p>
+<p>Cloth: ${item.clothType}</p>
+<p>Date: ${item.measurementDate}</p>
+<p>Status: ${item.status}</p>
+${item.status !== "Delivered" ? `
+
+<select id="tailor-${item._id}" ${item.tailor ? "disabled" : ""}>
+  <option value="">Select Tailor</option>
+  <option value="Aniket">Aniket</option>
+  <option value="Suresh">Suresh</option>
+  <option value="Rohit">Rohit</option>
+</select>
+
+<button onclick="assignTailor('${item._id}')">
+Assign Tailor
+</button>
+
+<div style="margin-top:10px">
+
+${measurementFields}
+
+<button onclick="saveMeasurement('${item._id}')">
+Save Measurement
+</button>
+
+<br><br>
+
+${item.status === "Measured" ? `
+<button onclick="markDelivered('${item._id}')">
+Mark Delivered
+</button>
+` : ""}
+
+</div>
+
+` : `
+
+<p style="color:green;font-weight:bold;">
+✅ Delivered
+</p>
+
+`}
+
+</div>
+`;
+
+if(item.status === "Delivered"){
+  deliveredHTML += card;
+}
+else if(item.tailor){
+  assignedHTML += card;
+}
+else{
+  pendingHTML += card;
+}
+
+});
+container.innerHTML =
+pendingHTML +
+assignedHTML +
+deliveredHTML;
+});
+
+
+function updateStatus(id){
+
+console.log("Clicked ID:", id);   // ✅ HERE
+
+let status = document.getElementById("status-" + id).value;
+
+fetch("http://localhost:5000/update-order-status/" + id, {
+method: "PUT",
+headers: {
+  "Content-Type": "application/json"
+},
+body: JSON.stringify({ status: status })
+})
+.then(res => res.json())
+.then((data) => {
+console.log("Response:", data);   // ✅ HERE
+alert("Status Updated ✅");
+location.reload();
+});
+
+}
+
+function assignTailor(id){
+
+let input = document.getElementById("tailor-" + id);
+let tailor = input.value.trim();
+
+if(!tailor){
+alert("Please enter tailor name");
+return;
+}
+
+console.log("Sending Tailor:", tailor);
+
+fetch("http://localhost:5000/assign-tailor/" + id,{
+method:"PUT",
+headers:{
+"Content-Type":"application/json"
+},
+body: JSON.stringify({ tailor: tailor })
+})
+.then(res => res.json())
+.then(data => {
+
+console.log("Response:", data);
+
+alert("✅ Tailor Assigned Successfully");
+
+location.reload();
+
+});
+
+}
+function saveMeasurement(id){
+
+let data = {};
+
+let chest = document.getElementById("chest-" + id);
+let waist = document.getElementById("waist-" + id);
+let length = document.getElementById("length-" + id);
+let sleeve = document.getElementById("sleeve-" + id);
+let shoulder = document.getElementById("shoulder-" + id);
+let thigh = document.getElementById("thigh-" + id);
+
+if(chest) data.chest = chest.value;
+if(waist) data.waist = waist.value;
+if(length) data.length = length.value;
+if(sleeve) data.sleeve = sleeve.value;
+if(shoulder) data.shoulder = shoulder.value;
+if(thigh) data.thigh = thigh.value;
+
+console.log("Sending data:", data);
+
+fetch("http://localhost:5000/add-measurement/" + id,{
+method:"PUT",
+headers:{
+"Content-Type":"application/json"
+},
+body: JSON.stringify(data)
+})
+.then(res => res.json())
+.then(data => {
+alert("✅ Measurement Saved Successfully");
+location.reload();
+})
+.catch(err => {
+console.log("ERROR:", err);
+alert("❌ Error saving measurement");
+});
+
+}
+function updateStock(id){
+
+let stock = document.getElementById("stock-" + id).value;
+
+if(stock === ""){
+alert("Enter stock value");
+return;
+}
+
+fetch("http://localhost:5000/update-stock/" + id,{
+method:"PUT",
+headers:{
+"Content-Type":"application/json"
+},
+body: JSON.stringify({ stock: Number(stock) })
+})
+.then(res => {
+
+if(!res.ok){
+throw new Error("Server error");
+}
+
+return res.json();
+})
+.then(data => {
+
+alert("Stock Updated Successfully");
+
+location.reload();
+
+})
+.catch(err => {
+console.log("ERROR:", err);
+alert("Error updating stock");
+});
+
+}
+function showSection(sectionId){
+
+let dashboard = document.getElementById("dashboard");
+let orders = document.getElementById("ordersSection");
+let stitch = document.getElementById("stitchSection");
+
+if(dashboard) dashboard.style.display = "none";
+if(orders) orders.style.display = "none";
+if(stitch) stitch.style.display = "none";
+
+let active = document.getElementById(sectionId);
+if(active){
+  if(sectionId === "stitchSection"){
+    active.style.display = "flex";   // ✅ IMPORTANT
+  }else{
+    active.style.display = "block";
+  }
+}
+
+}
+// default page
+showSection("dashboard");
+
+function downloadSalesReport(){
+
+window.open(
+"http://localhost:5000/sales-report",
+"_blank"
+);
+
+}
+
+function markDelivered(id){
+
+fetch(
+"http://localhost:5000/update-stitch-status/" + id,
+{
+method:"PUT",
+headers:{
+"Content-Type":"application/json"
+},
+body: JSON.stringify({
+status:"Delivered"
+})
+}
+)
+.then(res => res.json())
+.then(() => {
+
+alert("✅ Stitch Order Delivered");
+
+location.reload();
+
+});
+
+}
+
+function logout(){
+  localStorage.removeItem("adminId");   // remove admin session
+  window.location.href = "admin-login.html";  // correct file name
+}
+
+function approveReplace(id){
+
+fetch("http://localhost:5000/approve-replace/" + id,{
+method:"PUT"
+})
+.then(res => res.json())
+.then(() => {
+alert("Replacement Approved");
+location.reload();
+});
+
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>My Orders</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h2 style="text-align:center;">My Orders</h2>
+
+<div id="orders" style="text-align:center;"></div>
+
+<script>
+    if(!localStorage.getItem("userId")){
+  window.location.href = "login.html";
+}
+
+// get logged-in user
+let userId = localStorage.getItem("userId");
+
+// if not logged in
+if(!userId){
+alert("Please login first");
+window.location.href = "login.html";
+}
+
+// fetch orders of this user
+fetch("http://localhost:5000/my-orders/" + userId)
+.then(res => res.json())
+.then(data => {
+
+let container = document.getElementById("orders");
+
+
+
+data.forEach(item => {
+
+console.log("Full item:", item);
+
+let div = document.createElement("div");
+
+div.innerHTML = `
+<div style="background:white;padding:15px;margin:15px;border-radius:8px;width:250px;display:inline-block">
+
+<img src="${item.image ? item.image : 'images/tshirt1.jpg'}" 
+style="width:100%;height:150px;object-fit:cover;border-radius:6px">
+
+<h3>${item.name}</h3>
+<p>${item.product}</p>
+<p>${item.price}</p>
+<p>Status: ${item.status}</p>
+
+<button onclick="downloadInvoice('${item._id}')">
+📄 Download Invoice
+</button>
+
+${item.rating ? `<p>Rating: ${item.rating} ⭐</p> `: ""}
+${item.feedback ? `<p>Feedback: ${item.feedback}</p> `: ""}
+${item.status === "Delivered" && !item.rating ? `
+${item.status === "Delivered" && item.replaceStatus !== "Requested" && item.replaceStatus !== "Approved" ? `
+<select id="reason-${item._id}">
+  <option value="">Select Reason</option>
+  <option value="Size Issue">Size Issue</option>
+  <option value="Wrong Product Received">Wrong Product Received</option>
+  <option value="Defective">Defective Product</option>
+</select>
+
+<button onclick="requestReplace('${item._id}')">Replace</button>
+` : ""}
+${item.replaceStatus === "Requested" ? `<p style="color:orange;">Replacement Requested</p>` : ""}
+${item.replaceStatus === "Approved" ? `
+<p style="color:green;"><b>Replacement Approved</b></p>
+<p style="font-size:14px;color:#555;">
+Existing product will be collected during delivery  🚚
+</p>
+` : ""}
+
+<div style="margin-top:10px">
+
+<select id="rating-${item._id}">
+  <option value="">Rate</option>
+  <option value="1">⭐</option>
+  <option value="2">⭐⭐</option>
+  <option value="3">⭐⭐⭐</option>
+  <option value="4">⭐⭐⭐⭐</option>
+  <option value="5">⭐⭐⭐⭐⭐</option>
+</select>
+
+<br><br>
+
+<input id="feedback-${item._id}" placeholder="Write feedback">
+
+<br><br>
+
+<button onclick="submitFeedback('${item._id}')">Submit</button>
+
+</div>
+` : ""}
+
+${item.status !== "Delivered" && item.status !== "Cancelled" ? `
+<button onclick="cancelOrder('${item._id}')">Cancel Order</button>
+` : ""}
+
+</div>
+`;
+
+
+
+container.appendChild(div);
+
+});
+
+});
+
+// ================= STITCHING ORDERS =================
+
+fetch("http://localhost:5000/my-stitch/" + userId + "?t=" + new Date().getTime())
+.then(res => res.json())
+.then(data => {
+
+let container = document.getElementById("orders");
+
+data.forEach(item => {
+
+let div = document.createElement("div");
+
+// ✅ STEP 1: Create measurement HTML OUTSIDE
+let measurementHTML = "";
+
+if(item.chest) measurementHTML += `<p>Chest: ${item.chest}</p>`;
+if(item.waist) measurementHTML += `<p>Waist: ${item.waist}</p>`;
+if(item.length) measurementHTML += `<p>Length: ${item.length}</p>`;
+if(item.sleeve) measurementHTML += `<p>Sleeve: ${item.sleeve}</p>`;
+if(item.shoulder) measurementHTML += `<p>Shoulder: ${item.shoulder}</p>`;
+if(item.thigh) measurementHTML += `<p>Thigh: ${item.thigh}</p>`;
+
+// ✅ STEP 2: Use inside HTML
+div.innerHTML = `
+<div style="background:#f1f1f1;padding:15px;margin:15px;border-radius:8px;width:250px;display:inline-block">
+
+<h3>Stitching Order</h3>
+<p><b>Name:</b> ${item.name}</p>
+<p>Cloth: ${item.clothType}</p>
+<p>Date: ${item.measurementDate}</p>
+<p>Status: ${item.status}</p>
+<p>Tailor: ${item.tailor || "Not Assigned"}</p>
+
+<button onclick="downloadStitchReceipt('${item._id}')">
+📄 Stitch Receipt
+</button>
+
+${measurementHTML}
+
+</div>
+`;
+
+container.appendChild(div);
+
+});
+
+});
+
+function downloadStitchReceipt(id){
+
+window.open(
+"http://localhost:5000/stitch-receipt/" + id,
+"_blank"
+);
+
+}
+
+function cancelOrder(id){
+console.log("Deleting ID", id);
+
+if(confirm("Are you sure to cancel this order?")){
+
+fetch("http://localhost:5000/cancel-order/" + id,{
+method:"DELETE"
+})
+.then(()=>{
+alert("Order cancelled");
+location.reload();
+});
+
+}
+
+}
+
+function submitFeedback(id){
+
+let rating = document.getElementById("rating-" + id).value;
+let feedback = document.getElementById("feedback-" + id).value;
+
+if(!rating || !feedback){
+alert("Please fill all fields");
+return;
+}
+
+fetch("http://localhost:5000/add-feedback/" + id,{
+method:"PUT",
+headers:{
+"Content-Type":"application/json"
+},
+body: JSON.stringify({
+rating: rating,
+feedback: feedback
+})
+})
+.then(res => res.json())
+.then(data => {
+alert("Thank you for feedback!");
+location.reload();
+});
+
+}
+
+function downloadInvoice(id){
+
+window.open(
+"http://localhost:5000/invoice/" + id,
+"_blank"
+);
+
+}
+function requestReplace(id){
+
+let reason = document.getElementById("reason-" + id).value;
+
+if(!reason){
+alert("Please select reason");
+return;
+}
+
+fetch("http://localhost:5000/request-replace/" + id,{
+method:"PUT",
+headers:{
+"Content-Type":"application/json"
+},
+body: JSON.stringify({ reason: reason })
+})
+.then(res => res.json())
+.then(() => {
+alert("Replacement Requested");
+location.reload();
+});
+
+}
+
+
+</script>
+
+</body>
+</html>

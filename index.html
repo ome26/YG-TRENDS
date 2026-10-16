@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<!-- CHARACTER ENCODING -->
+<meta charset="UTF-8">
+
+<!-- PAGE TITLE (appears in browser tab) -->
+<title>Clothing Store</title>
+
+<!-- LINKING EXTERNAL CSS FILE -->
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+
+<!-- ================= HEADER SECTION ================= -->
+<!-- This section contains the brand name, tagline, shop info, navigation buttons and cart -->
+
+<header>
+
+<!-- BRAND NAME -->
+<h1 class="brand-title">YG Trends</h1>
+
+<!-- TAGLINE / SLOGAN -->
+<p class="brand-slogan">Style That Fits You Perfectly</p>
+
+<!-- SHOP ADDRESS AND CONTACT INFORMATION -->
+<p class="shop-info">
+ Address: Chitale road, Pragati Complex, Ahilyanagar 
+
+</p>
+
+<!-- TOGGLE BUTTONS -->
+<!-- These buttons switch between Stitching section and Readymade section -->
+<div class="toggle-container">
+<button id="tailorBtn" class="active">Stitching</button>
+<button id="readyBtn">Readymade</button>
+</div>
+
+<!-- header buttons-->
+<div class="header-right">
+<div class="auth-buttons">
+  <button id="loginBtn" onclick="window.location.href='login.html'">Login</button>
+  <button id="adminBtn" onclick="window.location.href='admin-login.html'">Admin</button>
+</div>
+
+
+<div class="profile-container">
+
+<div class="profile-icon" id="profileCircle">A</div>
+
+<div class="profile-hover-box">
+<h4 id="profileName"></h4>
+<p id="profileEmail"></p>
+</div>
+
+</div>
+<button class="myorders-btn" onclick="window.location.href='myorders.html'">
+📦 My Orders
+</button>
+
+<div class="cart-icon" onclick="goToCart()">
+🛒 Cart <span id="cartCount">0</span>
+</div>
+
+<button class="logout-btn" onclick="logout()">Logout</button>
+
+
+</div>
+
+</header>
+
+
+
+<!-- ================= STITCHING SECTION ================= -->
+<!-- This section displays tailoring services offered by the shop -->
+
+<section id="tailorSection" class="products">
+
+<h2>Stitching</h2>
+
+<div class="product-grid">
+
+
+<!-- ================= SHIRT STITCHING CARD ================= -->
+<div class="card">
+
+<!-- MAIN IMAGE OF PRODUCT -->
+<img id="mainImage" src="images/shirt1.jpg" class="main-img">
+
+<!-- SMALL IMAGE GALLERY -->
+<!-- Clicking these thumbnails changes the main image -->
+<div class="image-row">
+<img src="images/shirt1.jpg" onclick="changeImage(this)">
+<img src="images/shirt2.jpg" onclick="changeImage(this)">
+<img src="images/shirt3.jpg" onclick="changeImage(this)">
+</div>
+
+<!-- PRODUCT NAME -->
+<h3>Shirt</h3>
+
+<!-- STITCHING PRICE -->
+<p>Stitching Price: ₹550</p>
+
+<!-- FABRIC REQUIREMENT -->
+<p>Fabric Required: 1.5 – 2 meters</p>
+
+<!-- BOOK STITCHING BUTTON -->
+<!-- Shirt -->
+<button onclick="window.location.href='booking.html?cloth=Shirt'">Book Stitching</button>
+
+</div>
+
+
+
+<!-- ================= PANT STITCHING CARD ================= -->
+<div class="card">
+
+<img src="images/pant1.jpg" class="main-img">
+
+<div class="image-row">
+<img src="images/pant1.jpg" onclick="changeImage(this)">
+<img src="images/pant2.jpg" onclick="changeImage(this)">
+<img src="images/pant3.jpg" onclick="changeImage(this)">
+</div>
+
+<h3>Pant</h3>
+<p>Stitching Price: ₹650</p>
+<p>Fabric Required: 1.3 – 1.5 meters</p>
+
+<!-- Pant -->
+<button onclick="window.location.href='booking.html?cloth=Pant'">Book Stitching</button>
+
+</div>
+
+
+
+<!-- ================= SAFARI SUIT CARD ================= -->
+<div class="card">
+
+<img src="images/suit1.jpg" class="main-img">
+
+<div class="image-row">
+<img src="images/suit1.jpg" onclick="changeImage(this)">
+<img src="images/suit2.jpg" onclick="changeImage(this)">
+<img src="images/suit3.jpg" onclick="changeImage(this)">
+</div>
+
+<h3> Suit</h3>
+<p>Stitching Price: ₹2500</p>
+<p>Fabric Required: 3 – 3.5 meters</p>
+
+<!-- Suit -->
+<button onclick="window.location.href='booking.html?cloth=Suit'">Book Stitching</button>
+
+</div>
+
+
+
+<!-- ================= NEHRU JACKET CARD ================= -->
+<div class="card">
+
+<img src="images/nehru1.jpg" class="main-img">
+
+<div class="image-row">
+<img src="images/nehru1.jpg" onclick="changeImage(this)">
+<img src="images/nehru2.jpg" onclick="changeImage(this)">
+<img src="images/nehru3.jpg" onclick="changeImage(this)">
+</div>
+
+<h3>Nehru Jacket</h3>
+<p>Stitching Price: ₹1500</p>
+<p>Fabric Required:  1.5 – 1.6 meters</p>
+
+
+<!-- Nehru Jacket -->
+<button onclick="window.location.href='booking.html?cloth=Nehru Jacket'">Book Stitching</button>
+
+</div>
+
+
+
+<!-- ================= KURTA CARD ================= -->
+<div class="card">
+
+<img src="images/kurta1.jpg" class="main-img">
+
+<div class="image-row">
+<img src="images/kurta1.jpg" onclick="changeImage(this)">
+<img src="images/kurta2.jpg" onclick="changeImage(this)">
+<img src="images/kurta3.jpg" onclick="changeImage(this)">
+</div>
+
+<h3>Kurta</h3>
+<p>Stitching Price: ₹500</p>
+<p>Fabric Required: 2 – 2.5 meters</p>
+
+<!-- Kurta -->
+<button onclick="window.location.href='booking.html?cloth=Kurta'">Book Stitching</button>
+
+</div>
+
+</div> <!-- END PRODUCT GRID -->
+
+
+
+<!-- ================= WHY CHOOSE US SECTION ================= -->
+<!-- This section highlights shop strengths -->
+
+<div class="why-section">
+
+<h2>What Makes YG Trends Special</h2>
+
+<div class="why-grid">
+
+<div class="why-box">✔ 15+ Years Tailoring Experience</div>
+<div class="why-box">✔ Perfect Fitting Guarantee</div>
+<div class="why-box">✔ Fast Delivery</div>
+<div class="why-box">✔ Quality Stitching</div>
+
+</div>
+</div>
+
+</section>
+
+
+
+<!-- ================= READYMADE CLOTHES SECTION ================= -->
+<!-- This section shows ready-made clothes available for purchase -->
+
+<section id="readySection" class="products">
+
+<h2>Readymade Clothes</h2>
+
+<div class="product-grid">
+
+
+
+<!-- ================= READYMADE PRODUCT CARD ================= -->
+<div class="card readymade-card">
+
+<div class="img-container">
+
+<!-- MAIN PRODUCT IMAGE -->
+<img src="images/tshirt1.jpg" class="product-img"
+data-images="images/tshirt1.jpg,images/tshirt2.jpg,images/tshirt3.jpg">
+
+<!-- SIZE OPTIONS -->
+<!-- These appear when user hovers on product image -->
+<div class="size-overlay">
+<span class="size-option" data-size="S">S</span>
+<span class="size-option" data-size="M">M</span>
+<span class="size-option" data-size="L">L</span>
+<span class="size-option" data-size="XL">XL</span>
+</div>
+
+</div>
+
+<h3>T-Shirt</h3>
+<p>₹499</p>
+
+<!-- ADD TO CART BUTTON -->
+<button>Add to Cart</button>
+
+</div>
+
+
+
+<!-- ================= MORE READYMADE PRODUCTS ================= -->
+<!-- All other products follow the same structure -->
+
+<div class="card readymade-card">
+
+<div class="img-container">
+<img src="images/tshirt4.jpg" class="product-img"
+data-images="images/tshirt4.jpg,images/tshirt5.jpg,images/tshirt6.jpg">
+
+<div class="size-overlay">
+<span class="size-option" data-size="S">S</span>
+<span class="size-option" data-size="M">M</span>
+<span class="size-option" data-size="L">L</span>
+<span class="size-option" data-size="XL">XL</span>
+</div>
+
+</div>
+
+<h3>Polo T-Shirt</h3>
+<p>₹599</p>
+<button>Add to Cart</button>
+
+</div>
+
+
+<div class="card readymade-card">
+
+<div class="img-container">
+<img src="images/shirt1.jpg" class="product-img"
+data-images="images/shirt1.jpg,images/shirt2.jpg,images/shirt3.jpg">
+
+<div class="size-overlay">
+<span class="size-option" data-size="S">S</span>
+<span class="size-option" data-size="M">M</span>
+<span class="size-option" data-size="L">L</span>
+<span class="size-option" data-size="XL">XL</span>
+
+</div>
+</div>
+
+<h3>Shirt</h3>
+<p>₹799</p>
+<button>Add to Cart</button>
+</div>
+<div class="card readymade-card">
+
+<div class="img-container">
+<img src="images/shirt4.jpg" class="product-img"
+data-images="images/shirt4.jpg,images/shirt5.jpg,images/shirt6.jpg">
+
+<div class="size-overlay">
+<span class="size-option" data-size="S">S</span>
+<span class="size-option" data-size="M">M</span>
+<span class="size-option" data-size="L">L</span>
+<span class="size-option" data-size="XL">XL</span>
+
+</div>
+</div>
+
+<h3>Formal Shirt</h3>
+<p>₹799</p>
+<button>Add to Cart</button>
+</div>
+
+<div class="card readymade-card">
+
+<div class="img-container">
+<img src="images/shirt7.jpg" class="product-img"
+data-images="images/shirt7.jpg,images/shirt8.jpg,images/shirt9.jpg">
+
+<div class="size-overlay">
+<span class="size-option" data-size="S">S</span>
+<span class="size-option" data-size="M">M</span>
+<span class="size-option" data-size="L">L</span>
+<span class="size-option" data-size="XL">XL</span>
+
+</div>
+</div>
+
+<h3>Checked Shirt</h3>
+<p>₹799</p>
+<button>Add to Cart</button>
+</div>
+
+
+<div class="card readymade-card">
+
+<div class="img-container">
+<img src="images/jacket1.jpg" class="product-img"
+data-images="images/jacket1.jpg,images/jacket2.jpg,images/jacket3.jpg">
+
+<div class="size-overlay">
+<span class="size-option" data-size="S">S</span>
+<span class="size-option" data-size="M">M</span>
+<span class="size-option" data-size="L">L</span>
+<span class="size-option" data-size="XL">XL</span>
+
+</div>
+</div>
+
+<h3>Jacket</h3>
+<p>₹1499</p>
+<button>Add to Cart</button>
+</div>
+
+<div class="card readymade-card">
+
+<div class="img-container">
+<img src="images/trouser1.jpg" class="product-img"
+data-images="images/trouser1.jpg,images/trouser2.jpg,images/trouser3.jpg">
+
+<div class="size-overlay">
+
+<span class="size-option" data-size="28">28</span>
+<span class="size-option" data-size="30">30</span>
+<span class="size-option" data-size="32">32</span>
+<span class="size-option" data-size="34">34</span>
+
+</div>
+</div>
+
+<h3>Trouser</h3>
+<p>₹999</p>
+<button>Add to Cart</button>
+</div>
+
+<div class="card readymade-card">
+
+<div class="img-container">
+<img src="images/jeans1.jpg" class="product-img"
+data-images="images/jeans1.jpg,images/jeans2.jpg,images/jeans3.jpg">
+
+<div class="size-overlay">
+<span class="size-option" data-size="28">28</span>
+<span class="size-option" data-size="30">30</span>
+<span class="size-option" data-size="32">32</span>
+<span class="size-option" data-size="34">34</span>
+
+</div>
+</div>
+
+<h3>Denim jeans</h3>
+<p>₹1199</p>
+<button>Add to Cart</button>
+</div>
+
+<div class="card readymade-card">
+
+<div class="img-container">
+<img src="images/jeans4.jpg" class="product-img"
+data-images="images/jeans4.jpg,images/jeans5.jpg,images/jeans6.jpg">
+
+<div class="size-overlay">
+
+<span class="size-option" data-size="28">28</span>
+<span class="size-option" data-size="30">30</span>
+<span class="size-option" data-size="32">32</span>
+<span class="size-option" data-size="34">34</span>
+
+</div>
+</div>
+
+<h3>Oversized-Jeans</h3>
+<p>₹1299</p>
+<button>Add to Cart</button>
+</div>
+
+<div class="card readymade-card">
+
+<div class="img-container">
+<img src="images/track1.jpg" class="product-img"
+data-images="images/track1.jpg,images/track2.jpg,images/track3.jpg">
+
+<div class="size-overlay">
+
+<span class="size-option" data-size="28">28</span>
+<span class="size-option" data-size="30">30</span>
+<span class="size-option" data-size="32">32</span>
+<span class="size-option" data-size="34">34</span>
+
+</div>
+</div>
+
+<h3>Track Pant</h3>
+<p>₹899</p>
+<button>Add to Cart</button>
+</div>
+
+
+
+</div>
+
+</section>
+
+
+
+<!-- ================= FOOTER ================= -->
+<!-- Footer shows shop name, timings and copyright -->
+
+<footer>
+
+<p>YG Trends Tailoring</p>
+<p>Open: 11:00 AM – 8:00 PM</p>
+<p>© 2026 YG Trends | All Rights Reserved</p>
+
+</footer>
+
+
+
+<!-- LINKING JAVASCRIPT FILE -->
+<script src="script.js"></script>
+
+</body>
+</html>

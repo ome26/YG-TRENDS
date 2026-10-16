@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Your Cart</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h2 class="cart-title">Your Cart</h2>
+
+<div class="checkout-container">
+
+  <!-- ✅ EMPTY CART -->
+  <div id="emptyCart" class="empty-cart" style="display:none;">
+  <h2>Your Cart is Empty 😔</h2>
+  <p>Add some products to continue shopping</p>
+  <button onclick="goShopping()">Continue Shopping</button>
+</div>
+
+
+  <!-- ✅ MAIN CHECKOUT -->
+  <div id="checkoutSection">
+
+    <!-- CART PRODUCTS -->
+    <div id="cartItems"></div>
+
+    <h3 id="totalAmount" style="text-align: center;">Total: ₹0</h3>
+
+    <!-- CUSTOMER DETAILS -->
+    <h3>Customer Details</h3>
+
+    <input type="text" id="customerName" placeholder="Enter your name"><br>
+    <br>
+    <input type="tel" id="mobile" placeholder="Enter mobile number"><br>
+
+    <!-- ADDRESS -->
+    <h3>Delivery Address</h3>
+    <div style="display:flex; gap:10px;">
+  <input type="text" id="address" style="flex:1;" disabled>
+  <button onclick="editAddress()">Edit</button>
+</div>
+    <p>Estimated Delivery: 7 days</p>
+
+    <button onclick="showPayment()">Proceed</button>
+
+    <!-- PAYMENT -->
+    <div id="paymentSection" style="display:none;">
+      <h3>Select Payment Method</h3>
+      <label><input type="radio" checked> Cash on Delivery</label><br><br>
+      <button onclick="confirmOrder()">Confirm Order</button>
+
+    </div>
+
+    <br><br>
+
+
+</div>
+<style>
+#successAnimation h1{
+  animation: pop 1s ease;
+}
+
+#successAnimation p{
+  animation: fade 1.5s ease;
+}
+
+@keyframes pop{
+  from { transform: scale(0.5); opacity:0; }
+  to { transform: scale(1); opacity:1; }
+}
+
+@keyframes fade{
+  from { opacity:0; }
+  to { opacity:1; }
+}
+</style>
+
+<script>
+
+if(!localStorage.getItem("userId")){
+  window.location.href = "login.html";
+}
+
+let savedAddress = localStorage.getItem("userAddress");
+
+if(savedAddress){
+  document.getElementById("address").value = savedAddress;
+}
+
+/* LOAD CART ITEMS */
+
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+
+let cartContainer = document.getElementById("cartItems");
+let emptyCartDiv = document.getElementById("emptyCart");
+let totalEl = document.getElementById("totalAmount");
+let checkoutSection = document.getElementById("checkoutSection");
+
+if(cart.length === 0){
+
+  if(cartContainer) cartContainer.style.display = "none";
+  if(totalEl) totalEl.style.display = "none";
+  if(checkoutSection) checkoutSection.style.display = "none";
+
+  if(emptyCartDiv) emptyCartDiv.style.display = "block";
+
+}else{
+
+  if(emptyCartDiv) emptyCartDiv.style.display = "none";
+  if(checkoutSection) checkoutSection.style.display = "block";
+
+  let total = 0;
+
+  cart.forEach(item => {
+    let price = parseInt(item.price.replace("₹","")) || 0;
+    total += price;
+  });
+
+  if(totalEl){
+    totalEl.innerText = "Total: ₹" + total;
+  }
+
+}
+
+let container = document.getElementById("cartItems");
+
+
+
+cart.forEach(function(item, index){
+
+let div = document.createElement("div");
+
+div.innerHTML =
+'<div style="background:white;padding:15px;margin:15px;border-radius:8px;width:250px;display:inline-block">' +
+
+'<img src="'+item.image+'" style="width:100%;height:150px;object-fit:cover;border-radius:6px">' +
+
+'<h3>'+item.name+'</h3>' +
+
+'<p>'+item.price+'</p>' +
+
+'<p>Size: '+item.size+'</p>' +
+
+'<button onclick="removeItem('+index+')">Remove</button>' +
+
+'</div>';
+
+container.appendChild(div);
+
+});
+
+
+/* SHOW PAYMENT SECTION */
+
+function showPayment(){
+
+let name = document.getElementById("customerName").value;
+let mobile = document.getElementById("mobile").value;
+let address = document.getElementById("address").value;
+localStorage.setItem("userAddress", address);
+
+if(name === "" || mobile === "" || address === ""){
+alert("Please fill all details");
+return;
+}
+
+document.getElementById("paymentSection").style.display = "block";
+
+}
+
+
+
+/* CONFIRM ORDER */
+
+async function confirmOrder(){
+
+let name = document.getElementById("customerName").value;
+let mobile = document.getElementById("mobile").value;
+let address = document.getElementById("address").value;
+localStorage.setItem("userAddress", address);
+
+setTimeout(() => {
+  document.getElementById("successAnimation").style.display = "block";
+}, 300);
+
+setTimeout(() => {
+  window.location.href = "index.html";
+}, 2000);
+
+/* SEND EACH PRODUCT TO BACKEND */
+
+for(let item of cart){
+
+await fetch("http://localhost:5000/order",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+userId:localStorage.getItem("userId"),
+name:name,
+mobile:mobile,
+product:item.name,
+price:item.price,
+size:item.size,
+image:item.image,
+address:address
+})
+
+});
+
+}
+
+
+
+/* CLEAR CART */
+
+localStorage.removeItem("cart");
+
+/* REDIRECT */
+
+
+
+}
+function removeItem(index){
+
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+cart.splice(index, 1);
+
+localStorage.setItem("cart", JSON.stringify(cart));
+
+location.reload();
+
+}
+function goShopping(){
+  window.location.href = "index.html";
+}
+
+function editAddress(){
+  let addressInput = document.getElementById("address");
+  addressInput.disabled = false;
+  addressInput.focus();
+}
+
+</script>
+<div id="successAnimation" style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:white;
+z-index:9999;
+text-align:center;
+padding-top:150px;
+">
+
+<h1 style="color:green;font-size:28px;">✔️ Order Placed Successfully</h1>
+<p style="font-size:18px;">Your order will reach you soon 🚚</p>
+
+</div>
+</body>
+
+</html>
